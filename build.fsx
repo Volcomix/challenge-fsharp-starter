@@ -12,13 +12,13 @@ open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 
 Target.create "Clean" (fun _ ->
-    !! "**/bin"
-    ++ "**/obj"
+    !! "src/**/bin"
+    ++ "src/**/obj"
     |> Shell.cleanDirs 
 )
 
 Target.create "Build" (fun _ ->
-    !! "**/*.*proj"
+    !! "src/**/*.*proj"
     |> Seq.iter (DotNet.build id)
 )
 
