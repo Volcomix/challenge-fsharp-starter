@@ -1,8 +1,15 @@
-﻿// Learn more about F# at http://fsharp.org
-
+﻿(* Auto-generated code below aims at helping you parse *)
+(* the standard input according to the problem statement. *)
 open System
 
-[<EntryPoint>]
-let main argv =
-    printfn "Hello World from F#!"
-    0 // return an integer exit code
+
+(* game loop *)
+while true do
+    eprintfn "What is your name?"
+    Console.ReadLine ()
+    |> Sample.hello
+    |> printfn "%s\n"
+
+    
+    (* Write an action using printfn *)
+    (* To debug: eprintfn "Debug message" *)
