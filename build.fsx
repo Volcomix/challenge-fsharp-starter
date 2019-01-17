@@ -32,6 +32,18 @@ let parseFile (opens, lines) file =
         |> Seq.fold parseLine (opens, "" :: lines, false)
     opens, lines
 
+let merge _ =
+    let files =
+        Xml.read true projFile "" "" "//Compile/@Include"
+        |> Seq.map ((</>) srcDir)
+    Trace.logItems "Merging: " files
+    let opens, lines = Seq.fold parseFile (Set.empty, []) files
+    Shell.mkdir buildDir
+    List.rev lines
+    |> Seq.append opens
+    |> File.writeNew outFile
+    Trace.tracefn "Output: %s" outFile
+
 Target.create "Clean" (fun _ ->
     !! "src/**/bin"
     ++ "src/**/obj"
@@ -47,17 +59,13 @@ Target.create "BuildTest" (fun _ ->
 Target.create "Test" (fun _ ->
     DotNet.test id testsProjFile)
 
-Target.create "Merge" (fun _ ->
-    let files =
-        Xml.read true projFile "" "" "//Compile/@Include"
-        |> Seq.map ((</>) srcDir)
-    Trace.logItems "Merging: " files
-    let opens, lines = Seq.fold parseFile (Set.empty, []) files
-    Shell.mkdir buildDir
-    List.rev lines
-    |> Seq.append opens
-    |> File.writeNew outFile
-    Trace.tracefn "Output: %s" outFile)
+Target.create "Merge" merge
+
+Target.create "Watch" (fun _ ->
+    use __ =
+        !! (srcDir </> "**/*.fs")
+        |> ChangeWatcher.run merge
+    System.Console.ReadLine() |> ignore)
 
 Target.create "All" ignore
 
@@ -66,6 +74,7 @@ Target.create "All" ignore
 "BuildTest" ==> "All"
 "Test" ==> "All"
 "Merge" ==> "All"
+"Merge" ==> "Watch"
 
 "Clean"
     ?=> "Build"
@@ -73,4 +82,4 @@ Target.create "All" ignore
     ?=> "Test"
     ?=> "Merge"
 
-Target.runOrDefault "All"
+Target.runOrDefault "Watch"
