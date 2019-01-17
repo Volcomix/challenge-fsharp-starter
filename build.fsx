@@ -13,6 +13,7 @@ open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 
 let buildDir = "build"
+let outputFile = buildDir </> "Challenge.fs"
 
 let parseLine (opens, lines, isModule) line =
     match line with
@@ -51,7 +52,8 @@ Target.create "Merge" (fun _ ->
     Shell.mkdir buildDir
     List.rev lines
     |> Seq.append opens
-    |> File.writeNew (buildDir </> "Challenge.fs"))
+    |> File.writeNew outputFile
+    Trace.tracefn "Output: %s" outputFile)
 
 Target.create "All" ignore
 
