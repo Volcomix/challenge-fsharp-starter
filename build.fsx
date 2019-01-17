@@ -38,7 +38,6 @@ let merge _ =
         |> Seq.map ((</>) srcDir)
     Trace.logItems "Merging: " files
     let opens, lines = Seq.fold parseFile (Set.empty, []) files
-    Shell.mkdir buildDir
     List.rev lines
     |> Seq.append opens
     |> File.writeNew outFile
@@ -59,7 +58,9 @@ Target.create "BuildTest" (fun _ ->
 Target.create "Test" (fun _ ->
     DotNet.test id testsProjFile)
 
-Target.create "Merge" merge
+Target.create "Merge" (fun _ ->
+    Shell.mkdir buildDir
+    merge ())
 
 Target.create "Watch" (fun _ ->
     use __ =
