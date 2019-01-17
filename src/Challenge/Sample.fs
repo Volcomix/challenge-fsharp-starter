@@ -1,3 +1,7 @@
 module Sample
 
-let hello name = "Hello, " + name + "!"
+open System
+open System.IO
+
+let hello name =
+    "Hello, " + name + "!"
