@@ -13,7 +13,10 @@ open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 
 let buildDir = "build"
-let outputFile = buildDir </> "Challenge.fs"
+let outFile = buildDir </> "Challenge.fs"
+let srcDir = "src/Challenge"
+let projFile = srcDir </> "Challenge.fsproj"
+let testsProjFile = srcDir + ".Tests/Challenge.Tests.fsproj"
 
 let parseLine (opens, lines, isModule) line =
     match line with
@@ -36,30 +39,38 @@ Target.create "Clean" (fun _ ->
     |> Shell.cleanDirs)
 
 Target.create "Build" (fun _ ->
-    !! "src/Challenge/*.*proj"
-    |> Seq.iter (DotNet.build id))
+    DotNet.build id projFile)
 
 Target.create "BuildTest" (fun _ ->
-    !! "src/Challenge.Tests/*.*proj"
-    |> Seq.iter (DotNet.build id))
+    DotNet.build id testsProjFile)
+
+Target.create "Test" (fun _ ->
+    DotNet.test id testsProjFile)
 
 Target.create "Merge" (fun _ ->
     let files =
-        Xml.read true "src/Challenge/Challenge.fsproj" "" "" "//Compile/@Include"
-        |> Seq.map ((</>) "src/Challenge")
+        Xml.read true projFile "" "" "//Compile/@Include"
+        |> Seq.map ((</>) srcDir)
     Trace.logItems "Merging: " files
     let opens, lines = Seq.fold parseFile (Set.empty, []) files
     Shell.mkdir buildDir
     List.rev lines
     |> Seq.append opens
-    |> File.writeNew outputFile
-    Trace.tracefn "Output: %s" outputFile)
+    |> File.writeNew outFile
+    Trace.tracefn "Output: %s" outFile)
 
 Target.create "All" ignore
 
 "Clean" ==> "All"
 "Build"  ==> "All"
 "BuildTest" ==> "All"
+"Test" ==> "All"
 "Merge" ==> "All"
+
+"Clean"
+    ?=> "Build"
+    ?=> "BuildTest"
+    ?=> "Test"
+    ?=> "Merge"
 
 Target.runOrDefault "All"
