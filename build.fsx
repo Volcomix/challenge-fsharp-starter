@@ -52,7 +52,7 @@ Target.create "Clean" (fun _ ->
 Target.create "Build" (fun _ ->
     DotNet.build id projFile)
 
-Target.create "BuildTest" (fun _ ->
+Target.create "BuildTests" (fun _ ->
     DotNet.build id testsProjFile)
 
 Target.create "Test" (fun _ ->
@@ -72,14 +72,14 @@ Target.create "All" ignore
 
 "Clean" ==> "All"
 "Build"  ==> "All"
-"BuildTest" ==> "All"
+"BuildTests" ==> "All"
 "Test" ==> "All"
 "Merge" ==> "All"
 "Merge" ==> "Watch"
 
 "Clean"
     ?=> "Build"
-    ?=> "BuildTest"
+    ?=> "BuildTests"
     ?=> "Test"
     ?=> "Merge"
 
