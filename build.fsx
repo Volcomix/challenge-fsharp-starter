@@ -18,13 +18,12 @@ let srcDir = "src/Challenge"
 let projFile = srcDir </> "Challenge.fsproj"
 let testsProjFile = srcDir + ".Tests/Challenge.Tests.fsproj"
 
-let parseLine (opens, lines, isModule) line =
-    match line with
+let parseLine (opens, lines, isModule) = function
     | "" when isModule && List.head lines = "    " -> opens, lines, isModule
-    | _ when String.startsWith "open " line -> Set.add line opens, lines, isModule
-    | _ when String.startsWith "module " line -> opens, line + " =" :: lines, true
-    | _ when isModule -> opens, "    " + line :: lines, isModule
-    | _ -> opens, line :: lines, isModule
+    | line when String.startsWith "open " line -> Set.add line opens, lines, isModule
+    | line when String.startsWith "module " line -> opens, line + " =" :: lines, true
+    | line when isModule -> opens, "    " + line :: lines, isModule
+    | line -> opens, line :: lines, isModule
 
 let parseFile (opens, lines) file =
     let opens, lines, _ =
